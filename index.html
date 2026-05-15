@@ -41,6 +41,7 @@
         .input-group { display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: 12px; margin-bottom: 10px; }
         .group-a { background: #fff5f0; border: 1px solid #ffe0d0; }
         .group-b { background: #f0f7ff; border: 1px solid #d0e7ff; }
+        .group-s { background: #f5f5f5; border: 1px solid #e0e0e0; }
         .section-header { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; }
         .section-header strong { font-size: 15px; color: #444; }
         .input-row { display: flex; gap: 8px; align-items: flex-end; width: 100%; }
@@ -150,6 +151,16 @@
             <div class="input-row">
                 <div class="input-item"><span class="hint">身長 (cm)</span><input type="number" id="heightB" value="171.5" step="0.1" oninput="updateScene()"></div>
                 <div class="input-item" style="flex: 0.35;"><span class="hint">色</span><input type="color" id="colorB" class="color-picker" value="#ffad60" oninput="updateScene()"></div>
+            </div>
+        </div>
+
+        <div class="input-group group-s">
+            <div class="section-header"><strong>スマホの設定</strong></div>
+            <div class="input-row">
+                <div class="input-item">
+                    <span class="hint">スマホの色</span>
+                    <input type="color" id="colorS" class="color-picker" value="#222222" oninput="updateScene()">
+                </div>
             </div>
         </div>
 
@@ -397,6 +408,9 @@
         const hand = shooter.arms[armSide].children[0];
         hand.add(smartphone);
         
+        // スマホの色を更新
+        smartphone.material.color.set(document.getElementById('colorS').value);
+
         smartphone.rotation.set(0, 0, 0); 
         smartphone.rotation.x = Math.PI / 2;
         smartphone.rotation.z = (armSide === 0 ? Math.PI : 0); 
