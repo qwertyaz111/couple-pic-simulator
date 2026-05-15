@@ -1,2 +1,0 @@
-# couple-pic-simulator
-ツーショットシミュレーター
