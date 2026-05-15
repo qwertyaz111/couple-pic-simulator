@@ -354,7 +354,7 @@
         group.legs = [];
         [-1, 1].forEach(side => {
             const anchor = new THREE.Group(); anchor.position.set(side * (torsoW * 0.25), legH, 0);
-            const mesh = new THREE.Mesh(new THREE.BoxGeometry(torsoW*0.35, legH, torsoW*0.35), bodyMat);
+            const mesh = new THREE.Mesh(new THREE.BoxGeometry(torsoW*0.4, legH, torsoW*0.4), bodyMat);
             mesh.position.y = -legH * 0.5; anchor.add(mesh); group.add(anchor); group.legs.push(anchor);
         });
 
