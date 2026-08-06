@@ -8,16 +8,33 @@
         :root { --panel-width: 300px; }
         body { margin: 0; font-family: 'Helvetica Neue', Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif; background: #ffffff; overflow: hidden; }
         #ui-panel {
-            position: absolute; top: 10px; left: 10px; width: var(--panel-width);
-            background: rgba(255, 255, 255, 0.95); padding: 15px;
-            border-radius: 15px; z-index: 100; box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-            max-height: calc(100vh - 40px); overflow-y: auto;
-            border: 1px solid rgba(255,255,255,0.3); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-            touch-action: auto; transition: all 0.3s ease;
+            position: absolute; 
+            top: 10px; 
+            left: 10px; 
+            width: var(--panel-width);
+            max-height: calc(100vh - 20px);
+            max-height: calc(100dvh - 20px); /* アドレスバーの可変長に対応 */
+            background: rgba(255, 255, 255, 0.95); 
+            padding: 15px; 
+            padding-bottom: 40px; /* 一番下の要素が隠れないよう余白を確保 */
+            border-radius: 15px; 
+            z-index: 100; 
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            overflow-y: auto; 
+            -webkit-overflow-scrolling: touch; /* iOSでの滑らかなスクロール */
+            touch-action: pan-y; /* 縦スワイプ操作（スクロール）を許可 */
+            border: 1px solid rgba(255,255,255,0.3); 
+            backdrop-filter: blur(10px); 
+            -webkit-backdrop-filter: blur(10px);
+            box-sizing: border-box;
+            transition: all 0.2s ease-out; /* 開閉アニメーションを滑らかに */
         }
         #canvas-container { width: 100vw; height: 100vh; cursor: move; touch-action: none; }
 
-        @media screen and (max-width: 480px) { :root { --panel-width: 85vw; } }
+        @media screen and (max-width: 480px) { 
+            :root { --panel-width: calc(100vw - 20px); }
+            #ui-panel { left: 10px; right: 10px; }
+        }
         
         @media screen and (orientation: landscape) and (max-height: 500px) {
             :root { --panel-width: 260px; }
@@ -25,8 +42,23 @@
             .app-title { font-size: 1.1rem; }
         }
 
-        .panel-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; }
-        #toggle-text { font-size: 12px; font-weight: bold; color: #666; background: #eee; padding: 2px 8px; border-radius: 10px; }
+        .panel-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            cursor: pointer; 
+            user-select: none; 
+            gap: 10px; 
+        }
+        #toggle-text { 
+            font-size: 12px; 
+            font-weight: bold; 
+            color: #666; 
+            background: #eee; 
+            padding: 4px 10px; 
+            border-radius: 10px; 
+            white-space: nowrap; /* テキストの意図しない改行を防止 */
+        }
         
         /* スマホカメラ視点用の最小化（タイトルも消す） */
         .minimized { width: auto !important; padding: 10px 15px !important; }
@@ -35,7 +67,27 @@
         /* 通常視点用の折り畳み（コンテンツのみ消す） */
         .collapsed #ui-content { display: none; }
 
-        .app-title { font-size: 1.4rem; margin: 0; color: #333; text-align: center; font-weight: bold; flex-grow: 1; }
+        /* 折りたたんだ（閉じた）時の専用スタイル */
+        #ui-panel.collapsed {
+            max-height: none !important;
+            padding: 10px 15px !important;
+            overflow: hidden !important;
+            width: auto;
+            max-width: calc(100vw - 20px);
+        }
+
+        @media screen and (max-width: 480px) { 
+            /* スマホ表示で閉じた場合、右端の固定を解除してタイトルサイズへ収める */
+            #ui-panel.collapsed { right: auto; }
+        }
+
+        .app-title { 
+            font-size: 1.2rem; 
+            margin: 0; 
+            color: #333; 
+            font-weight: bold; 
+            white-space: nowrap; /* タイトルの改行を防止 */
+        }
         .app-description { font-size: 11px; color: #777; margin-top: 8px; margin-bottom: 5px; line-height: 1.5; text-align: center; }
 
         .input-group { display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: 12px; margin-bottom: 10px; }
@@ -116,7 +168,19 @@
             text-align: center;
         }
         
-        #view-label { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.7); color: white; padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: bold; z-index: 100; pointer-events: none; }
+        #view-label { 
+            position: absolute; 
+            bottom: 20px; 
+            right: 15px; 
+            background: rgba(0,0,0,0.7); 
+            color: white; 
+            padding: 8px 16px; 
+            border-radius: 20px; 
+            font-size: 12px; 
+            font-weight: bold; 
+            z-index: 90; 
+            pointer-events: none; 
+        }
     </style>
 </head>
 <body>
@@ -416,8 +480,16 @@
         smartphone.rotation.z = (armSide === 0 ? Math.PI : 0); 
         smartphone.position.set(armSide === 0 ? 0.07 : -0.07, -shooter.userData.armLen * 0.5, 0.05);
 
-        const names = {A: document.getElementById('nameA').value||'A', B: document.getElementById('nameB').value||'B'};
-        const labels = {'3rd':'三人称視点','A':names.A+'の視点','B':names.B+'の視点','cam':'スマホカメラ視点'};
+        const nA = document.getElementById('nameA').value || 'A';
+        const nB = document.getElementById('nameB').value || 'B';
+        const myName = (currentView === 'A') ? nA : nB;
+
+        const labels = {
+            '3rd': '三人称視点',
+            'A': `${myName} の視点`,
+            'B': `${myName} の視点`,
+            'cam': 'スマホカメラ視点'
+        };
         document.getElementById('view-label').innerText = labels[currentView];
         
         // 視点切り替え時にトグルの文字をリセット
@@ -597,4 +669,5 @@
     init();
 </script>
 </body>
+</html>
 </html>
